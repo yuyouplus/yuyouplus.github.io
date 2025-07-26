@@ -1,111 +1,217 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>鱼柚の发布页</title>
     <style>
+        :root {
+            --primary-color: #ffd700;
+            --bg-color: #0b0b22;
+            --shine-color: rgba(255, 255, 255, 0.8);
+            --btn-hover-bg: #ffd700;
+            --btn-hover-text: #0b0b22;
+        }
+
         body {
-            background-color: #000;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            background-color: var(--bg-color);
             overflow: hidden;
+            /* 让 Canvas 占满背景 */
+            position: relative; 
         }
 
-        h1 {
-            font-family: 'Arial Black', sans-serif;
-            font-size: clamp(2.5rem, 8vw, 5rem);
-            color: #fff;
-            text-shadow: 
-                0 0 10px #ff00ff, 
-                0 0 20px #ff00ff, 
-                0 0 30px #ff00ff, 
-                0 0 40px #ff00ff;
-            animation: glow 1.5s ease-in-out infinite alternate;
-            text-align: center;
-            position: relative;
-            z-index: 1;
-        }
-
-        @keyframes glow {
-            from {
-                text-shadow: 
-                    0 0 10px #ff00ff, 
-                    0 0 20px #ff00ff, 
-                    0 0 30px #ff00ff, 
-                    0 0 40px #ff00ff;
-            }
-            to {
-                text-shadow: 
-                    0 0 20px #ff00ff, 
-                    0 0 30px #ff00ff, 
-                    0 0 40px #ff00ff, 
-                    0 0 50px #ff00ff, 
-                    0 0 60px #ff00ff;
-            }
-        }
-
-        /* 背景粒子效果 */
-        .particle {
+        /* 粒子背景 Canvas */
+        #particle-canvas {
             position: absolute;
-            background-color: rgba(255, 0, 255, 0.5);
-            border-radius: 50%;
-            pointer-events: none;
-            animation: float 4s infinite ease-in-out;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0; /* 保证在内容下方 */
         }
 
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0) rotate(0deg);
-            }
-            50% {
-                transform: translateY(-20px) rotate(180deg);
-            }
+        .tech-box {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            border: 8px solid var(--primary-color);
+            border-radius: 5px;
+            box-sizing: border-box;
+            color: var(--primary-color);
+            font-family: "微软雅黑", sans-serif;
+            overflow: hidden;
+            z-index: 1; /* 内容层，盖在 Canvas 上 */
+        }
+
+        .tech-box::before,
+        .tech-box::after,
+        .tech-box span::before,
+        .tech-box span::after {
+            content: "";
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary-color);
+        }
+
+        .tech-box span::before { top: 8px; left: 8px; }
+        .tech-box span::after { top: 8px; right: 8px; }
+        .tech-box::before { bottom: 8px; left: 8px; }
+        .tech-box::after { bottom: 8px; right: 8px; }
+
+        .tech-box .top-bar {
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background-color: var(--primary-color);
+        }
+
+        .tech-box .shine {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 300%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, var(--shine-color), transparent);
+            transform: translateX(-150%) skewX(-60deg);
+            transition: transform 0.8s ease-in-out;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .tech-box:hover .shine {
+            transform: translateX(50%) skewX(-60deg);
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .title {
+            font-weight: 700;
+            background-image: -webkit-linear-gradient(left, rgb(255, 221, 0), rgb(62, 47, 8) 25%, rgb(255, 221, 0) 50%, rgb(62, 47, 8) 75%, rgb(255, 221, 0));
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            background-size: 200% 100%;
+            animation: maskedAnimation 1s linear 0s infinite normal;
+            font-size: clamp(2rem, 6vw, 4rem);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        @keyframes maskedAnimation {
+            0% { background-position: 0 0; }
+            to { background-position: -100% 0; }
+        }
+
+        .link-btn {
+            color: var(--primary-color);
+            text-decoration: none;
+            border: 1px solid var(--primary-color);
+            padding: 6px 18px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .link-btn:hover {
+            background-color: var(--btn-hover-bg);
+            color: var(--btn-hover-text);
         }
     </style>
 </head>
 <body>
-    <h1>鱼柚の发布页</h1>
+    <!-- 粒子背景 Canvas -->
+    <canvas id="particle-canvas"></canvas>
+    
+    <div class="tech-box">
+        <div class="shine"></div>
+        <span></span>
+        <div class="top-bar"></div>
+        <div class="content">
+            <div class="title">鱼柚の发布页</div>
+            <a href="https://132130.xyz" target="_blank" class="link-btn">那就开始吧</a>
+        </div>
+    </div>
 
-    <!-- 粒子效果脚本 -->
+    <!-- 粒子动画逻辑 -->
     <script>
-        // 创建随机粒子效果
-        function createParticles() {
-            const count = Math.floor(window.innerWidth / 10);
-            const body = document.body;
+        // 获取 Canvas 元素
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const particleCount = 80; // 粒子数量，可调整
 
-            for (let i = 0; i < count; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                
-                // 随机大小和位置
-                const size = Math.random() * 5 + 1;
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
-                particle.style.left = `${Math.random() * 100}vw`;
-                particle.style.top = `${Math.random() * 100}vh`;
-                
-                // 随机动画延迟和持续时间
-                particle.style.animationDelay = `${Math.random() * 5}s`;
-                particle.style.animationDuration = `${Math.random() * 3 + 3}s`;
-                
-                body.appendChild(particle);
+        // 初始化 Canvas 尺寸
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // 粒子类
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.speedX = (Math.random() - 0.5) * 2; // 水平速度
+                this.speedY = (Math.random() - 0.5) * 2; // 垂直速度
+                this.size = Math.random() * 2 + 1; // 粒子大小
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                // 超出边界则反弹
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 215, 0, 0.3)`; // 金色半透明，呼应主题
+                ctx.fill();
             }
         }
 
-        // 页面加载时创建粒子
-        window.addEventListener('load', createParticles);
-        
-        // 窗口大小改变时重新创建粒子
-        window.addEventListener('resize', () => {
-            // 移除所有现有粒子
-            document.querySelectorAll('.particle').forEach(p => p.remove());
-            createParticles();
-        });
+        // 初始化粒子
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+        }
+
+        // 启动
+        initParticles();
+        animate();
     </script>
 </body>
 </html>
-    
