@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,9 +9,11 @@
         :root {
             --primary-color: #ffd700;
             --bg-color: #0b0b22;
-            --shine-color: rgba(255, 255, 255, 0.8);
+            --shine-color: rgba(255, 215, 0, 0.5);
             --btn-hover-bg: #ffd700;
             --btn-hover-text: #0b0b22;
+            --white-bg: #ffffff;
+            /* 新增白色背景变量 */
         }
 
         body {
@@ -21,8 +24,9 @@
             margin: 0;
             background-color: var(--bg-color);
             overflow: hidden;
-            /* 让 Canvas 占满背景 */
-            position: relative; 
+            position: relative;
+            transition: background-color 0.5s ease;
+            /* 添加背景色过渡动画 */
         }
 
         /* 粒子背景 Canvas */
@@ -32,7 +36,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            z-index: 0; /* 保证在内容下方 */
+            z-index: 0;
         }
 
         .tech-box {
@@ -45,24 +49,81 @@
             color: var(--primary-color);
             font-family: "微软雅黑", sans-serif;
             overflow: hidden;
-            z-index: 1; /* 内容层，盖在 Canvas 上 */
+            z-index: 1;
+            padding: 20px;
+            transition: border-color 0.5s ease;
+            /* 边框颜色过渡，可选 */
         }
 
+        /* 角落小黄块（保留原有四个角落装饰） */
         .tech-box::before,
         .tech-box::after,
-        .tech-box span::before,
-        .tech-box span::after {
+        .tech-box .corner::before,
+        .tech-box .corner::after {
             content: "";
             position: absolute;
             width: 8px;
             height: 8px;
             background-color: var(--primary-color);
+            transition: background-color 0.5s ease;
+            /* 可选，角落块颜色过渡 */
         }
 
-        .tech-box span::before { top: 8px; left: 8px; }
-        .tech-box span::after { top: 8px; right: 8px; }
-        .tech-box::before { bottom: 8px; left: 8px; }
-        .tech-box::after { bottom: 8px; right: 8px; }
+        /* 左上角 */
+        .tech-box .corner::before {
+            top: 8px;
+            left: 8px;
+        }
+
+        /* 右上角 */
+        .tech-box .corner::after {
+            top: 8px;
+            right: 8px;
+        }
+
+        /* 左下角 */
+        .tech-box::before {
+            bottom: 8px;
+            left: 8px;
+        }
+
+        /* 右下角 */
+        .tech-box::after {
+            bottom: 8px;
+            right: 8px;
+        }
+
+        /* 独立的录制指示灯（用新的元素承载，避免和角落小黄块冲突） */
+        .tech-box .rec-indicator {
+            position: absolute;
+            top: 25px;
+            right: 15px;
+            width: 12px;
+            height: 12px;
+            background-color: red;
+            border-radius: 50%;
+            z-index: 3;
+            animation: blink 1s infinite;
+            box-shadow: 0 0 10px red;
+        }
+
+        /* 闪烁动画：透明度+缩放变化 */
+        @keyframes blink {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.2;
+                transform: scale(0.8);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
 
         .tech-box .top-bar {
             position: absolute;
@@ -72,6 +133,8 @@
             width: 60px;
             height: 4px;
             background-color: var(--primary-color);
+            transition: background-color 0.5s ease;
+            /* 可选，顶部条颜色过渡 */
         }
 
         .tech-box .shine {
@@ -114,11 +177,18 @@
             font-size: clamp(2rem, 6vw, 4rem);
             text-align: center;
             margin-bottom: 2rem;
+            transition: -webkit-text-fill-color 0.5s ease;
+            /* 可选，文字渐变过渡（需考虑兼容性） */
         }
 
         @keyframes maskedAnimation {
-            0% { background-position: 0 0; }
-            to { background-position: -100% 0; }
+            0% {
+                background-position: 0 0;
+            }
+
+            to {
+                background-position: -100% 0;
+            }
         }
 
         .link-btn {
@@ -134,31 +204,71 @@
             background-color: var(--btn-hover-bg);
             color: var(--btn-hover-text);
         }
+
+        /* 新增 home 按钮样式 */
+        .home-btn {
+            position: absolute;
+            bottom: 30px;
+            /* 距离底部距离，可调整 */
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: rgba(255, 215, 0, 0.3);
+            /* 按钮背景色，半透明金色 */
+            border: 2px solid var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 3;
+            transition: background-color 0.3s ease;
+        }
+
+        .home-btn:hover {
+            background-color: rgba(255, 215, 0, 0.5);
+            /*  hover 时加深颜色 */
+        }
+
+        /* 按钮内部小圆圈（模拟 home 键细节），可根据需求调整或去掉 */
+        .home-btn::after {
+            content: "";
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+        }
     </style>
 </head>
+
 <body>
-    <!-- 粒子背景 Canvas -->
     <canvas id="particle-canvas"></canvas>
-    
+
     <div class="tech-box">
+        <!-- 独立的录制指示灯元素 -->
+        <div class="rec-indicator"></div>
+        <!-- 角落装饰用的空元素 -->
+        <span class="corner"></span>
         <div class="shine"></div>
-        <span></span>
         <div class="top-bar"></div>
         <div class="content">
             <div class="title">鱼柚の发布页</div>
-            <a href="https://132130.xyz" target="_blank" class="link-btn">那就开始吧</a>
+            <a href="https://132130.top" target="_blank" class="link-btn">那就开始吧</a>
         </div>
     </div>
 
-    <!-- 粒子动画逻辑 -->
+    <!-- 新增 home 按钮元素 -->
+    <div class="home-btn"></div>
+
     <script>
-        // 获取 Canvas 元素
+        // 原有粒子动画逻辑保持不变
         const canvas = document.getElementById('particle-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
-        const particleCount = 80; // 粒子数量，可调整
+        const particleCount = 80;
+        
+        // 全局变量，标记当前背景状态
+        let isDark = true;
 
-        // 初始化 Canvas 尺寸
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
@@ -166,31 +276,41 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // 粒子类
         class Particle {
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.speedX = (Math.random() - 0.5) * 2; // 水平速度
-                this.speedY = (Math.random() - 0.5) * 2; // 垂直速度
-                this.size = Math.random() * 2 + 1; // 粒子大小
+                this.speedX = (Math.random() - 0.5) * 2;
+                this.speedY = (Math.random() - 0.5) * 2;
+                this.size = Math.random() * 2 + 1;
             }
+            
             update() {
                 this.x += this.speedX;
                 this.y += this.speedY;
-                // 超出边界则反弹
                 if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
                 if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
             }
+            
+            // 修改：根据背景状态动态设置粒子颜色
             draw() {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 215, 0, 0.3)`; // 金色半透明，呼应主题
+                
+                // 根据背景状态选择不同的粒子颜色
+                if (isDark) {
+                    // 深色背景：使用浅金色半透明
+                    ctx.fillStyle = `rgba(255, 215, 0, 0.3)`;
+                } else {
+                    // 白色背景：使用深金色半透明，提高对比度
+                    ctx.fillStyle = `rgba(184, 134, 11, 0.6)`;
+                    // 也可以使用深灰色：`rgba(50, 50, 50, 0.6)`
+                }
+                
                 ctx.fill();
             }
         }
 
-        // 初始化粒子
         function initParticles() {
             particles = [];
             for (let i = 0; i < particleCount; i++) {
@@ -198,20 +318,37 @@
             }
         }
 
-        // 动画循环
         function animate() {
             requestAnimationFrame(animate);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
+
             particles.forEach(particle => {
                 particle.update();
                 particle.draw();
             });
         }
 
-        // 启动
         initParticles();
         animate();
+
+        // 新增 home 按钮点击事件逻辑
+        const homeBtn = document.querySelector('.home-btn');
+        const body = document.body;
+        const root = document.documentElement; // 用于获取/设置 CSS 变量
+
+        homeBtn.addEventListener('click', () => {
+            if (isDark) {
+                // 切换为白色背景
+                body.style.backgroundColor = getComputedStyle(root).getPropertyValue('--white-bg');
+                root.style.setProperty('--bg-color', getComputedStyle(root).getPropertyValue('--white-bg'));
+            } else {
+                // 切换回深色背景
+                body.style.backgroundColor = '#0b0b22';
+                root.style.setProperty('--bg-color', '#0b0b22');
+            }
+            isDark = !isDark;
+        });
     </script>
 </body>
+
 </html>
