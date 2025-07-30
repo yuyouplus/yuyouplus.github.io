@@ -1,8 +1,8 @@
 <div align="center">
 
-<h1>鱼柚Yuyou 发布页</h1>
+<h1>鱼柚の发布页</h1>
 
-[![Auth](https://img.shields.io/badge/Auth-Yuyou-ff69b4)](https://github.com/yuyouplus)
+[![Auth](https://img.shields.io/badge/Auth-鱼柚-ff69b4)](https://github.com/yuyouplus)
 [![HitCount](https://views.whatilearened.today/views/github/yuyouplus/yuyouplus.github.io.svg)](https://github.com/yuyouplus/yuyouplus.github.io)
 [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/yuyouplus/yuyouplus.github.io)](https://github.com/yuyouplus/yuyouplus.github.io/pulls)
 [![GitHub Pull Requests](https://img.shields.io/github/stars/yuyouplus/yuyouplus.github.io?logo=Undertale)](https://github.com/yuyouplus/yuyouplus.github.io/stargazers)
